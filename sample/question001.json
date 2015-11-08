@@ -1,0 +1,31 @@
+{
+  "sack": {
+    "capa": 15
+  },
+  "goods": [
+    {
+      "weight": 2,
+      "worth": 3
+    },
+    {
+      "weight": 11,
+      "worth": 15
+    },
+    {
+      "weight": 4,
+      "worth": 4
+    },
+    {
+      "weight": 1,
+      "worth": 2
+    },
+    {
+      "weight": 3,
+      "worth": 1
+    },
+    {
+      "weight": 5,
+      "worth": 8
+    }
+  ]
+}
