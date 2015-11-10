@@ -1,31 +1,36 @@
-
 defmodule Sack do
     defstruct weight: 0, worth: 0
-    def convert(map) when is_map(map) do
-        %Sack{:weight => map["weight"], :worth => map["worth"]}
+    def convert(%{"weight" => weight, "worth" => worth}) do
+        %Sack{weight: weight, worth: worth}
     end
 end
+
 defmodule Knapsack do
-	def solve(list, index, capa) when capa < 0, do: :over
-	def solve(list, index, capa) when length(list) == index, do: []
-	def solve(list, index, capa) do
-		sum? = fn
-			resultList when resultList == :over -> -1
-			resultList when resultList == [] -> 0
-	    	resultList ->
-	    		Enum.map(resultList, fn x -> x.worth end)
-                |> Enum.sum
-	    end
-	    [
-	    	solve(list, index+1, capa),
-	    	solve(list, index+1, capa-Enum.at(list, index).weight)
-	    	  |> case do
-	    	    :over -> :over
-			    x -> Enum.concat(x, [Enum.at(list, index)])
-	    	  end
-	    ] |> Enum.max_by(fn x -> sum?.(x) end)
+    def solve(list, capa) do
+        case solve(list, capa, 0) do
+            :over -> []
+            {resultList, _worth} -> resultList
+        end
+    end
+
+    defp solve(_list,  capa, _worth) when capa < 0, do: :over
+    defp solve(   [], _capa,  worth), do: {[], worth}
+    defp solve([sack|rest], capa, worth) do
+        sum? = fn
+            :over -> -1
+            {_, sum_worth} -> sum_worth
+        end
+        [
+            solve(rest, capa, worth),
+            solve(rest, capa - sack.weight, worth + sack.worth)
+                |> case do
+                    :over -> :over
+                    {list, sum_worth} -> {[sack|list], sum_worth}
+                end
+        ] |> Enum.max_by(sum?)
 	end
 end
+
 defmodule Main do
 	def main(args) do
 		{:ok, %{
@@ -35,8 +40,8 @@ defmodule Main do
                             }}} = List.first(args)
                                 |> File.read!
                                 |> JSX.decode
-		Enum.map(list, fn x -> Sack.convert(x) end)
-            |> Knapsack.solve(0, size)
+		Enum.map(list, &Sack.convert/1)
+            |> Knapsack.solve(size)
 		    |> Enum.map(fn x -> x.worth end)
             |> Enum.sum |> IO.puts
 	end
